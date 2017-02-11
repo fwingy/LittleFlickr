@@ -12,7 +12,10 @@ import org.json.JSONObject;
 public class GsonUtil {
     public static Photos handlePhotosResponse(String response) {
         try {
-            return new Gson().fromJson(response, Photos.class);
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
+            String photoContent = photosJsonObject.toString();
+            return new Gson().fromJson(photoContent, Photos.class);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,14 +9,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.fwingy.littleflickr.GsonData.Photo;
+import com.example.fwingy.littleflickr.GsonData.Photos;
 import com.example.fwingy.littleflickr.Network.GsonUtil;
 import com.example.fwingy.littleflickr.Network.HTTPUtil;
 import com.example.fwingy.littleflickr.Network.UrlGenerater;
 import com.example.fwingy.littleflickr.R;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,6 +35,14 @@ public class PhotoWallFragment extends Fragment {
     private String TAG = "PhotoWallFragment";
 
     private RecyclerView mPhotoWallRecyclerView;
+
+    private List<Photo> mPhotos;
+
+    private void setupAdapter() {
+        if (isAdded()) {
+            mPhotoWallRecyclerView.setAdapter(new PhotoAdapter(mPhotos));
+        }
+    }
 
     public static PhotoWallFragment newInstance() {
         return new PhotoWallFragment();
@@ -53,6 +65,10 @@ public class PhotoWallFragment extends Fragment {
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.photo_wall_recyclerview);
         mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
 
+        if (savedInstanceState != null) {
+            setupAdapter();
+        }
+
         return view;
     }
 
@@ -71,8 +87,55 @@ public class PhotoWallFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
                 Log.i(TAG, "加载的内容是:" + responseText);
-                GsonUtil.handlePhotosResponse(responseText);
+                final Photos photos = GsonUtil.handlePhotosResponse(responseText);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPhotos = photos.getPhotoList();
+                        setupAdapter();
+                    }
+                });
                 }
             });
     }
-}
+
+    private class PhotoHolder extends RecyclerView.ViewHolder {
+        private TextView mTitleTextView;
+
+        public PhotoHolder(View itemView) {
+            super(itemView);
+
+            mTitleTextView = (TextView) itemView;
+        }
+
+        public void bindGalleryItem(Photo item) {
+            mTitleTextView.setText(item.toString());
+        }
+    }
+
+    private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
+
+        private List<Photo> mPhotoList;
+
+        public PhotoAdapter(List<Photo> photoList) {
+            mPhotoList = photoList;
+        }
+
+        @Override
+        public PhotoHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+            TextView textView = new TextView(getActivity());
+            return new PhotoHolder(textView);
+        }
+
+        @Override
+        public void onBindViewHolder(PhotoHolder photoHolder, int position) {
+            Photo photoItem = mPhotoList.get(position);
+            photoHolder.bindGalleryItem(photoItem);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mPhotoList.size();
+        }
+    }
+    }

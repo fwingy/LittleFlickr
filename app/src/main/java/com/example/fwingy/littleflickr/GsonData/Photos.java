@@ -19,15 +19,4 @@ public class Photos {
     public void setPhotoList(List<Photo> photoList) {
         mPhotoList = photoList;
     }
-
-    @SerializedName("stat")
-    private String mStat;
-
-    public String getStat() {
-        return mStat;
-    }
-
-    public void setStat(String stat) {
-        mStat = stat;
-    }
 }
