@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">LittleFlickr</string>
+    <string name="release_to_refresh">RELEASE TO REFRESH</string>
+    <string name="swipe_to_refresh">SWIPE TO REFRESH</string>
+    <string name="refresh_returning">REFRESH RETURNING</string>
+    <string name="refresh_complete">COMPLETE</string>
+    <string name="release_to_load_more">RELEASE TO LOAD MORE</string>
+    <string name="swipe_to_load_more">SWIPE TO LOAD MORE</string>
+    <string name="load_more_returning">LOAD MORE RETURNING</string>
+    <string name="loading_more">LOADING MORE</string>
+    <string name="load_complete">COMPLETE</string>
 </resources>

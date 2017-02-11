@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
+import com.aspsine.swipetoloadlayout.OnRefreshListener;
+import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.GsonData.Photos;
 import com.example.fwingy.littleflickr.Network.GsonUtil;
@@ -22,11 +25,14 @@ import com.example.fwingy.littleflickr.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
+import static com.example.fwingy.littleflickr.R.id.swipeToLoadLayout;
 
 /**
  * Created by fwingy on 2017/2/10.
@@ -38,11 +44,15 @@ public class PhotoWallFragment extends Fragment {
 
     private RecyclerView mPhotoWallRecyclerView;
 
+    private SwipeToLoadLayout mSwipeToLoadLayout;
+
+    private PhotoAdapter mPhotoAdapter;
+
     private List<Photo> mPhotos;
 
     private void setupAdapter() {
         if (isAdded()) {
-            mPhotoWallRecyclerView.setAdapter(new PhotoAdapter(mPhotos));
+            mPhotoWallRecyclerView.setAdapter(mPhotoAdapter);
         }
     }
 
@@ -55,6 +65,7 @@ public class PhotoWallFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+        //autoRefresh();
         Log.i(TAG, UrlGenerater.getUrlStringWithFlickrGetRecent());
     }
 
@@ -64,14 +75,52 @@ public class PhotoWallFragment extends Fragment {
         //return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
-        mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.photo_wall_recyclerview);
+        mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
+        mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
         mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+        mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+                mSwipeToLoadLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSwipeToLoadLayout.setLoadingMore(false);
+                        queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+                        //mPhotoAdapter.notifyDataSetChanged();
+                    }
+                }, 2000);
+            }
+        });
+        mSwipeToLoadLayout.setOnRefreshListener(new OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mSwipeToLoadLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSwipeToLoadLayout.setRefreshing(false);
+                        queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+
+                    }
+                }, 2000);
+            }
+        });
 
         if (savedInstanceState != null) {
             setupAdapter();
         }
 
+        autoRefresh();
         return view;
+    }
+
+    private void autoRefresh() {
+        mSwipeToLoadLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeToLoadLayout.setRefreshing(true);
+            }
+        });
     }
 
     private void queryFromServer(String address) {
@@ -94,6 +143,7 @@ public class PhotoWallFragment extends Fragment {
                     @Override
                     public void run() {
                         mPhotos = photos.getPhotoList();
+                        mPhotoAdapter = new PhotoAdapter(mPhotos);
                         setupAdapter();
                     }
                 });
