@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import com.example.fwingy.littleflickr.Network.GsonUtil;
 import com.example.fwingy.littleflickr.Network.HTTPUtil;
 import com.example.fwingy.littleflickr.Network.UrlGenerater;
 import com.example.fwingy.littleflickr.R;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.List;
@@ -100,16 +102,20 @@ public class PhotoWallFragment extends Fragment {
     }
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
-        private TextView mTitleTextView;
+        //private TextView mTitleTextView;
+        private ImageView mImageView;
 
         public PhotoHolder(View itemView) {
             super(itemView);
 
-            mTitleTextView = (TextView) itemView;
+            mImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_item_imageview);
         }
 
-        public void bindGalleryItem(Photo item) {
-            mTitleTextView.setText(item.toString());
+        public void bindPhotoItem(Photo item) {
+            //mTitleTextView.setText(item.toString());
+            Picasso.with(getContext())
+                    .load(item.getUrl())
+                    .into(mImageView);
         }
     }
 
@@ -123,14 +129,15 @@ public class PhotoWallFragment extends Fragment {
 
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-            TextView textView = new TextView(getActivity());
-            return new PhotoHolder(textView);
+            LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+            View view = layoutInflater.inflate(R.layout.photo_item, viewGroup, false);
+            return new PhotoHolder(view);
         }
 
         @Override
         public void onBindViewHolder(PhotoHolder photoHolder, int position) {
             Photo photoItem = mPhotoList.get(position);
-            photoHolder.bindGalleryItem(photoItem);
+            photoHolder.bindPhotoItem(photoItem);
         }
 
         @Override
