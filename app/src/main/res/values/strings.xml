@@ -9,4 +9,5 @@
     <string name="load_more_returning">LOAD MORE RETURNING</string>
     <string name="loading_more">LOADING MORE</string>
     <string name="load_complete">COMPLETE</string>
+    <string name="action_search">search</string>
 </resources>

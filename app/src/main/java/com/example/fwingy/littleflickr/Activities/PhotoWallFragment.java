@@ -3,14 +3,18 @@ package com.example.fwingy.littleflickr.Activities;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
@@ -25,16 +29,14 @@ import com.example.fwingy.littleflickr.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-import static com.example.fwingy.littleflickr.R.id.swipeToLoadLayout;
-
 /**
+ *
  * Created by fwingy on 2017/2/10.
  */
 
@@ -50,6 +52,8 @@ public class PhotoWallFragment extends Fragment {
 
     private List<Photo> mPhotos;
 
+    private Toolbar mToolbar;
+
     private void setupAdapter() {
         if (isAdded()) {
             mPhotoWallRecyclerView.setAdapter(mPhotoAdapter);
@@ -64,6 +68,7 @@ public class PhotoWallFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
         queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
         //autoRefresh();
         Log.i(TAG, UrlGenerater.getUrlStringWithFlickrGetRecent());
@@ -78,6 +83,9 @@ public class PhotoWallFragment extends Fragment {
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
         mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
         mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
+        //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
 
         mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -195,4 +203,20 @@ public class PhotoWallFragment extends Fragment {
             return mPhotoList.size();
         }
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.toolbar, menu);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                Toast.makeText(getContext(), "点击了search按钮", Toast.LENGTH_SHORT).show();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+}

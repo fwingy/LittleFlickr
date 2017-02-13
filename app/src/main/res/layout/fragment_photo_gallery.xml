@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.aspsine.swipetoloadlayout.SwipeToLoadLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                 xmlns:tools="http://schemas.android.com/tools"
-                                                 android:id="@+id/swipeToLoadLayout"
-                                                 android:layout_width="match_parent"
-                                                 android:layout_height="match_parent"
-                                                 tools:context="com.example.fwingy.littleflickr.Activities.MainActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-    <com.example.fwingy.littleflickr.SwipeToLoad.RefreshHeaderView
-        android:id="@id/swipe_refresh_header"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:gravity="center"
-        android:layout_height="100dp" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-    <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swipe_target"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    </android.support.v7.widget.Toolbar>
 
-    <com.example.fwingy.littleflickr.SwipeToLoad.LoadMoreFooterView
-        android:id="@id/swipe_load_more_footer"
-        android:layout_width="match_parent"
-        android:gravity="center"
-        android:layout_height="100dp" />
+    <include layout="@layout/gallery_swipe_to_refresh" />
 
-</com.aspsine.swipetoloadlayout.SwipeToLoadLayout>
+</LinearLayout>
