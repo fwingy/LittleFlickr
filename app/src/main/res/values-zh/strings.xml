@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">LittleFlickr</string>
+    <string name="release_to_refresh">释放刷新</string>
+    <string name="swipe_to_refresh">下拉刷新</string>
+    <string name="refreshing_more">正在刷新</string>
+    <string name="refresh_returning">从刷新返回</string>
+    <string name="refresh_complete">刷新完成</string>
+    <string name="release_to_load_more">释放加载</string>
+    <string name="swipe_to_load_more">上拉刷新</string>
+    <string name="load_more_returning">从加载返回</string>
+    <string name="loading_more">正在加载</string>
+    <string name="load_complete">加载完成</string>
+    <string name="action_search">搜索</string>
+</resources>

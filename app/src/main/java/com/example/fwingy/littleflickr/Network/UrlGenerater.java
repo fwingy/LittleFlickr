@@ -29,14 +29,23 @@ public class UrlGenerater {
 
     public static String getUrlStringWithFlickrSearch(String searchText) {
         //return buildUrl("toyota RAV");  //只是测试
-        return buildUrl(searchText);
+        return buildUrl(searchText).build().toString();
     }
 
-    public static String buildUrl(String query) {
+    public static Uri.Builder buildUrl(String query) {
         Uri.Builder builder = BASEUri.buildUpon()
                 .appendQueryParameter("text", query);
                 //.appendQueryParameter("title", query);
 
-        return builder.build().toString();
+        return builder;
     }
+
+    public static String getNextPageUrl(String searchText, int Page) {
+        Integer page = Page + 1;
+        return buildUrl(searchText)
+                .appendQueryParameter("page", page.toString())
+                .build()
+                .toString();
+    }
+
 }

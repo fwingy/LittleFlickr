@@ -1,6 +1,7 @@
 package com.example.fwingy.littleflickr.Activities;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -34,6 +36,7 @@ import com.example.fwingy.littleflickr.SearchPreferences;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
@@ -61,6 +64,12 @@ public class PhotoWallFragment extends Fragment {
 
     private ProgressBar mProgressBar;
 
+    private int mCurrentPage;
+
+    private List<Photo> mNextPagePhotos;
+
+    private List<Photo> mAllPhotos = new ArrayList<>();
+
     private void setupAdapter() {
         if (isAdded()) {
             mPhotoWallRecyclerView.setAdapter(mPhotoAdapter);
@@ -77,10 +86,20 @@ public class PhotoWallFragment extends Fragment {
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
+        //mAllPhotos.clear();
+
         String searchData = SearchPreferences.getSearchData(getActivity());
-        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+
         //autoRefresh();
         Log.i(TAG, UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        //showProgressDialog();
+        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+        //closeProgressDialog();
     }
 
     @Nullable
@@ -89,14 +108,13 @@ public class PhotoWallFragment extends Fragment {
         //return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
         mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
         mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-        mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
-        mProgressBar.setVisibility(View.VISIBLE);
 
         mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -106,7 +124,9 @@ public class PhotoWallFragment extends Fragment {
                     public void run() {
                         mSwipeToLoadLayout.setLoadingMore(false);
                         String searchData = SearchPreferences.getSearchData(getActivity());
-                        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                        mCurrentPage += 1;
+                        continueQueryNextPage(UrlGenerater.getNextPageUrl(getSearchData(), mCurrentPage));
+                        //queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
                         //mPhotoAdapter.notifyDataSetChanged();
                     }
                 }, 2000);
@@ -119,6 +139,7 @@ public class PhotoWallFragment extends Fragment {
                     @Override
                     public void run() {
                         mSwipeToLoadLayout.setRefreshing(false);
+                        mAllPhotos.clear();
                         String searchData = SearchPreferences.getSearchData(getActivity());
                         queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
 
@@ -139,12 +160,13 @@ public class PhotoWallFragment extends Fragment {
         mSwipeToLoadLayout.post(new Runnable() {
             @Override
             public void run() {
-                mSwipeToLoadLayout.setRefreshing(true);
+                mSwipeToLoadLayout.setRefreshing(false);
             }
         });
     }
 
     private void queryFromServer(String address) {
+        showProgressDialog();
         HTTPUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -165,13 +187,50 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         mPhotos = photos.getPhotoList();
-                        mPhotoAdapter = new PhotoAdapter(mPhotos);
+                        mAllPhotos.addAll(mPhotos);
+                        mPhotoAdapter = new PhotoAdapter(mAllPhotos);
                         setupAdapter();
+                        closeProgressDialog();
                     }
                 });
                 }
             });
+    }
+
+    private void continueQueryNextPage(String address) {
+        HTTPUtil.sendOkHttpRequest(address, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "加载失败," +
+                                "请检查网络连接." +
+                                "大陆用户请确保已使用vpn等代理连接.", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseText = response.body().string();
+                Log.i(TAG, "加载的内容是:" + responseText);
+                final Photos NextPagePhotos = GsonUtil.handlePhotosResponse(responseText);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mNextPagePhotos = NextPagePhotos.getPhotoList();
+                        mAllPhotos.addAll(mNextPagePhotos);
+                        mAllPhotos.addAll(mPhotos);
+                        mPhotoAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
+
+
     }
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
@@ -220,12 +279,12 @@ public class PhotoWallFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, final MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.photo_wall, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -241,6 +300,15 @@ public class PhotoWallFragment extends Fragment {
                 Log.d("提交了：", query);
                 SearchPreferences.setSearchData(getActivity(), query);
 
+                //隐藏搜索框和键盘
+                searchItem.collapseActionView();
+                searchView.clearFocus();
+//                View view = getActivity().getCurrentFocus();
+//                if (view != null) {
+//                    InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//                }
+                mAllPhotos.clear();
                 queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
                 return true;
             }
@@ -257,7 +325,7 @@ public class PhotoWallFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-                Toast.makeText(getContext(), "点击了search按钮", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "点击了search按钮", Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -266,5 +334,18 @@ public class PhotoWallFragment extends Fragment {
     private String getSearchData() {
         String searchData = SearchPreferences.getSearchData(getActivity());
         return searchData;
+    }
+
+    private void showProgressDialog() {
+        if (mProgressBar.getVisibility() == View.GONE) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    private void closeProgressDialog() {
+        if (mProgressBar.getVisibility() == View.VISIBLE) {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 }
