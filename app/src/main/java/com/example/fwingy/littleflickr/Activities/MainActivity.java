@@ -10,6 +10,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected Fragment createFragment() {
+        //return TestProgressBarFragment.newInstance();
         return PhotoWallFragment.newInstance();
     }
 

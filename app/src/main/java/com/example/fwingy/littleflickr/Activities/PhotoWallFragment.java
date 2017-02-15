@@ -1,11 +1,14 @@
 package com.example.fwingy.littleflickr.Activities;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
@@ -26,6 +30,7 @@ import com.example.fwingy.littleflickr.Network.GsonUtil;
 import com.example.fwingy.littleflickr.Network.HTTPUtil;
 import com.example.fwingy.littleflickr.Network.UrlGenerater;
 import com.example.fwingy.littleflickr.R;
+import com.example.fwingy.littleflickr.SearchPreferences;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -54,6 +59,8 @@ public class PhotoWallFragment extends Fragment {
 
     private Toolbar mToolbar;
 
+    private ProgressBar mProgressBar;
+
     private void setupAdapter() {
         if (isAdded()) {
             mPhotoWallRecyclerView.setAdapter(mPhotoAdapter);
@@ -69,9 +76,11 @@ public class PhotoWallFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+
+        String searchData = SearchPreferences.getSearchData(getActivity());
+        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
         //autoRefresh();
-        Log.i(TAG, UrlGenerater.getUrlStringWithFlickrGetRecent());
+        Log.i(TAG, UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
     }
 
     @Nullable
@@ -82,10 +91,12 @@ public class PhotoWallFragment extends Fragment {
 
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
         mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
-        mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
+        mProgressBar.setVisibility(View.VISIBLE);
 
         mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -94,7 +105,8 @@ public class PhotoWallFragment extends Fragment {
                     @Override
                     public void run() {
                         mSwipeToLoadLayout.setLoadingMore(false);
-                        queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+                        String searchData = SearchPreferences.getSearchData(getActivity());
+                        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
                         //mPhotoAdapter.notifyDataSetChanged();
                     }
                 }, 2000);
@@ -107,7 +119,8 @@ public class PhotoWallFragment extends Fragment {
                     @Override
                     public void run() {
                         mSwipeToLoadLayout.setRefreshing(false);
-                        queryFromServer(UrlGenerater.getUrlStringWithFlickrGetRecent());
+                        String searchData = SearchPreferences.getSearchData(getActivity());
+                        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
 
                     }
                 }, 2000);
@@ -138,7 +151,9 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "加载失败," +
+                                "请检查网络连接." +
+                                "大陆用户请确保已使用vpn等代理连接.", Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -207,7 +222,35 @@ public class PhotoWallFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.toolbar, menu);
+        inflater.inflate(R.menu.photo_wall, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            /**
+             * Called when the user submits the query. This could be due to a key press on the keyboard or due to pressing a submit button.
+             * The listener can override the standard behavior by returning true to indicate that it has handled the submit request.
+             * Otherwise return false to let the SearchView handle the submission by launching any associated intent.
+             * @param query
+             * @return
+             */
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d("提交了：", query);
+                SearchPreferences.setSearchData(getActivity(), query);
+
+                queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("输入了：", newText);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -218,5 +261,10 @@ public class PhotoWallFragment extends Fragment {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getSearchData() {
+        String searchData = SearchPreferences.getSearchData(getActivity());
+        return searchData;
     }
 }
