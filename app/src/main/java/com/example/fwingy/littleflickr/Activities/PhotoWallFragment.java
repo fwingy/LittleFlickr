@@ -121,7 +121,7 @@ public class PhotoWallFragment extends Fragment {
                     public void run() {
                         mSwipeToLoadLayout.setLoadingMore(false);
                         String searchData = SearchPreferences.getSearchData(getActivity());
-                        mCurrentPage += 1;
+                        mCurrentPage += 2;
                         continueQueryNextPage(UrlGenerater.getNextPageUrl(getSearchData(), mCurrentPage));
                         //queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
                         //mPhotoAdapter.notifyDataSetChanged();
@@ -220,7 +220,6 @@ public class PhotoWallFragment extends Fragment {
                     public void run() {
                         mNextPagePhotos = NextPagePhotos.getPhotoList();
                         mAllPhotos.addAll(mNextPagePhotos);
-                        mAllPhotos.addAll(mPhotos);
                         mPhotoAdapter.notifyDataSetChanged();
                     }
                 });

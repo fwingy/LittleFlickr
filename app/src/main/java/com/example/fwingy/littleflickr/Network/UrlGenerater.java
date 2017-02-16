@@ -24,6 +24,7 @@ public class UrlGenerater {
             .appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .appendQueryParameter("extras", "url_s")
+            .appendQueryParameter("per_page", "30")
             .appendQueryParameter("safe_search", "1")
             .build();
 
