@@ -33,5 +33,12 @@ public class DataLab {
         return mAllPhotos;
     }
 
-
+    public Photo getPhoto(String id) {
+        for (Photo photo : mAllPhotos) {
+            if (photo.getId().equals(id)) {
+                return photo;
+            }
+        }
+        return null;
+    }
 }

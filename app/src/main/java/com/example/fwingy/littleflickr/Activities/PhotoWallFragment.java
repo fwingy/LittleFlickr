@@ -1,5 +1,6 @@
 package com.example.fwingy.littleflickr.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,7 +34,6 @@ import com.example.fwingy.littleflickr.SearchPreferences;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
@@ -108,7 +108,7 @@ public class PhotoWallFragment extends Fragment {
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
         mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
-        mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
         mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
@@ -173,6 +173,7 @@ public class PhotoWallFragment extends Fragment {
                         Toast.makeText(getContext(), "加载失败," +
                                 "请检查网络连接." +
                                 "大陆用户请确保已使用vpn等代理连接.", Toast.LENGTH_LONG).show();
+                        closeProgressDialog();
                     }
                 });
             }
@@ -229,21 +230,30 @@ public class PhotoWallFragment extends Fragment {
 
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         //private TextView mTitleTextView;
         private ImageView mImageView;
+        private Photo photo;
 
         public PhotoHolder(View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
 
             mImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_item_imageview);
         }
 
         public void bindPhotoItem(Photo item) {
+            photo = item;
             //mTitleTextView.setText(item.toString());
             Picasso.with(getContext())
-                    .load(item.getUrl())
+                    .load(photo.getUrl())
                     .into(mImageView);
+        }
+
+        @Override
+        public void onClick(View view) {
+            Intent intent = DetailActivity.newIntent(getActivity(), photo.getId());
+            startActivity(intent);
         }
     }
 
@@ -258,7 +268,7 @@ public class PhotoWallFragment extends Fragment {
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-            View view = layoutInflater.inflate(R.layout.photo_item, viewGroup, false);
+            View view = layoutInflater.inflate(R.layout.photo_wall_item, viewGroup, false);
             return new PhotoHolder(view);
         }
 
@@ -322,9 +332,10 @@ public class PhotoWallFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_search:
                 //Toast.makeText(getContext(), "点击了search按钮", Toast.LENGTH_SHORT).show();
-        }
 
+        }
         return super.onOptionsItemSelected(item);
+
     }
 
     private String getSearchData() {

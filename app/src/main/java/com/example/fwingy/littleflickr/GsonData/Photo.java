@@ -13,8 +13,11 @@ public class Photo {
     @SerializedName("id")
     private String mId;
 
-    @SerializedName("url_s")
+    @SerializedName("url_m")
     private String mUrl;
+
+    @SerializedName("url_l")
+    private String mUrl_l;
 
     public String getCaption() {
         return mCaption;
@@ -40,8 +43,17 @@ public class Photo {
         mUrl = url;
     }
 
+    public String getUrl_l() {
+        return mUrl_l;
+    }
+
+    public void setUrl_l(String url_l) {
+        mUrl_l = url_l;
+    }
+
     @Override
     public String toString() {
         return mCaption;
     }
+
 }
