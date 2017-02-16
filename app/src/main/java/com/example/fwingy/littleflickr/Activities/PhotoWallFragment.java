@@ -1,9 +1,6 @@
 package com.example.fwingy.littleflickr.Activities;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -26,6 +22,7 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.GsonData.Photos;
 import com.example.fwingy.littleflickr.Network.GsonUtil;
@@ -68,7 +65,7 @@ public class PhotoWallFragment extends Fragment {
 
     private List<Photo> mNextPagePhotos;
 
-    private List<Photo> mAllPhotos = new ArrayList<>();
+    private List<Photo> mAllPhotos = DataLab.getDataLab(getActivity()).getAllPhotos();
 
     private void setupAdapter() {
         if (isAdded()) {
