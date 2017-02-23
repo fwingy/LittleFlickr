@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
@@ -49,6 +51,10 @@ public class PhotoWallFragment extends Fragment {
 
     private String TAG = "PhotoWallFragment";
 
+    private TextView mHintText;
+
+    private RelativeLayout mGalleryContentLayout;
+
     private RecyclerView mPhotoWallRecyclerView;
 
     private SwipeToLoadLayout mSwipeToLoadLayout;
@@ -62,6 +68,8 @@ public class PhotoWallFragment extends Fragment {
     private ProgressBar mProgressBar;
 
     private int mCurrentPage;
+
+    private boolean isRefreshing;
 
     private List<Photo> mNextPagePhotos;
 
@@ -95,7 +103,7 @@ public class PhotoWallFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         //showProgressDialog();
-        queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+        //queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
         //closeProgressDialog();
     }
 
@@ -106,6 +114,7 @@ public class PhotoWallFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
+        mHintText = (TextView) view.findViewById(R.id.hint_text);
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
         mSwipeToLoadLayout = (SwipeToLoadLayout) view.findViewById(R.id.swipeToLoadLayout);
         mPhotoWallRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
@@ -137,9 +146,9 @@ public class PhotoWallFragment extends Fragment {
                     public void run() {
                         mSwipeToLoadLayout.setRefreshing(false);
                         mAllPhotos.clear();
-                        String searchData = SearchPreferences.getSearchData(getActivity());
+                        isRefreshing = true;
                         queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
-
+                        isRefreshing = false;
                     }
                 }, 2000);
             }
@@ -150,6 +159,10 @@ public class PhotoWallFragment extends Fragment {
         }
 
         autoRefresh();
+        mGalleryContentLayout = (RelativeLayout) inflater.inflate(R.layout.gallery_content, null);
+        mGalleryContentLayout.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+        mHintText.setText("按“搜索”键搜索Flickr");
         return view;
     }
 
@@ -163,7 +176,11 @@ public class PhotoWallFragment extends Fragment {
     }
 
     private void queryFromServer(String address) {
-        showProgressDialog();
+        mHintText.setVisibility(View.GONE);
+        if (!isRefreshing) {
+            showProgressDialog();
+        }
+        mGalleryContentLayout.setVisibility(View.VISIBLE);
         HTTPUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

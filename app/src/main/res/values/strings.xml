@@ -11,4 +11,5 @@
     <string name="loading_more">loading more</string>
     <string name="load_complete">complete</string>
     <string name="action_search">search</string>
+    <string name="action_download">download</string>
 </resources>

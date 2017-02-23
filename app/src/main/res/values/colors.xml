@@ -6,4 +6,5 @@
     <color name="windowBackGround">#ffffff</color>
     <color name="textColor">#02B3E4</color>
     <color name="lucency">#00000000</color>
+    <color name="pureBlack">#000</color>
 </resources>

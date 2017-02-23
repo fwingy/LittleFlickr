@@ -11,4 +11,5 @@
     <string name="loading_more">正在加载</string>
     <string name="load_complete">加载完成</string>
     <string name="action_search">搜索</string>
+    <string name="action_download">下载原图</string>
 </resources>

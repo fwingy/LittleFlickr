@@ -11,6 +11,14 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"/>
 
+    <TextView
+        android:id="@+id/hint_text"
+        android:textSize="23dp"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -27,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/toolbar">
 
-        <include layout="@layout/gallery_swipe_to_refresh" />
+        <include layout="@layout/gallery_content" />
 
     </RelativeLayout>
 
