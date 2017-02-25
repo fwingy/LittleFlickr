@@ -12,4 +12,7 @@
     <string name="load_complete">加载完成</string>
     <string name="action_search">搜索</string>
     <string name="action_download">下载原图</string>
+    <string name="notification_downloading">正在下载...</string>
+    <string name="notification_download_suceess">下载成功</string>
+    <string name="notification_download_failed">下载失败</string>
 </resources>

@@ -13,11 +13,30 @@ public class Photo {
     @SerializedName("id")
     private String mId;
 
-    @SerializedName("url_m")
-    private String mUrl;
+    @SerializedName("url_s")
+    private String mUrl_s;
 
     @SerializedName("url_l")
     private String mUrl_l;
+
+    @SerializedName("url_o")
+    private String mUrl_o;
+
+    public String getUrl_o() {
+        return mUrl_o;
+    }
+
+    public void setUrl_o(String url_o) {
+        mUrl_o = url_o;
+    }
+
+    public String getUrl_s() {
+        return mUrl_s;
+    }
+
+    public void setUrl_s(String url_s) {
+        mUrl_s = url_s;
+    }
 
     public String getCaption() {
         return mCaption;
@@ -33,14 +52,6 @@ public class Photo {
 
     public void setId(String id) {
         mId = id;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
     }
 
     public String getUrl_l() {

@@ -12,4 +12,7 @@
     <string name="load_complete">complete</string>
     <string name="action_search">search</string>
     <string name="action_download">download</string>
+    <string name="notification_downloading">downloading</string>
+    <string name="notification_download_suceess">Successfully Downloaded</string>
+    <string name="notification_download_failed">Download Failed</string>
 </resources>

@@ -28,7 +28,7 @@ import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.GsonData.Photos;
-import com.example.fwingy.littleflickr.Network.GsonUtil;
+import com.example.fwingy.littleflickr.Network.JsonHandleUtil;
 import com.example.fwingy.littleflickr.Network.HTTPUtil;
 import com.example.fwingy.littleflickr.Network.UrlGenerater;
 import com.example.fwingy.littleflickr.R;
@@ -97,6 +97,7 @@ public class PhotoWallFragment extends Fragment {
 
         //autoRefresh();
         Log.i(TAG, UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+
     }
 
     @Override
@@ -148,6 +149,7 @@ public class PhotoWallFragment extends Fragment {
                         mAllPhotos.clear();
                         isRefreshing = true;
                         queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                        mCurrentPage = 1;
                         isRefreshing = false;
                     }
                 }, 2000);
@@ -156,6 +158,9 @@ public class PhotoWallFragment extends Fragment {
 
         if (savedInstanceState != null) {
             setupAdapter();
+            Log.d(TAG, "图片url_s是" + mAllPhotos.get(0).getUrl_s());
+            Log.d(TAG, "图片url_l是" + mAllPhotos.get(0).getUrl_l());
+            Log.d(TAG, "图片url_o是" + mAllPhotos.get(0).getUrl_o());
         }
 
         autoRefresh();
@@ -198,13 +203,14 @@ public class PhotoWallFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
                 Log.i(TAG, "加载的内容是:" + responseText);
-                final Photos photos = GsonUtil.handlePhotosResponse(responseText);
+                final Photos photos = JsonHandleUtil.handlePhotosResponse(responseText);
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
                         mPhotos = photos.getPhotoList();
                         mAllPhotos.addAll(mPhotos);
+
                         mPhotoAdapter = new PhotoAdapter(mAllPhotos);
                         setupAdapter();
                         closeProgressDialog();
@@ -232,7 +238,7 @@ public class PhotoWallFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
                 Log.i(TAG, "加载的内容是:" + responseText);
-                final Photos NextPagePhotos = GsonUtil.handlePhotosResponse(responseText);
+                final Photos NextPagePhotos = JsonHandleUtil.handlePhotosResponse(responseText);
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -263,7 +269,7 @@ public class PhotoWallFragment extends Fragment {
             photo = item;
             //mTitleTextView.setText(item.toString());
             Picasso.with(getContext())
-                    .load(photo.getUrl())
+                    .load(photo.getUrl_s())
                     .into(mImageView);
         }
 
@@ -333,6 +339,8 @@ public class PhotoWallFragment extends Fragment {
 //                }
                 mAllPhotos.clear();
                 queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                mCurrentPage = 1;
+
                 return true;
             }
 

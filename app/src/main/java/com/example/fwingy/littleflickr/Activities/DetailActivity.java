@@ -16,6 +16,7 @@ import android.view.View;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.R;
+import com.example.fwingy.littleflickr.Services.DownloadService;
 
 import java.util.List;
 
@@ -82,6 +83,5 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
     }
-
 
 }
