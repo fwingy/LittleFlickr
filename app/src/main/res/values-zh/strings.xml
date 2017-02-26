@@ -15,4 +15,5 @@
     <string name="notification_downloading">正在下载...</string>
     <string name="notification_download_suceess">下载成功</string>
     <string name="notification_download_failed">下载失败</string>
+    <string name="send_to">发送到</string>
 </resources>

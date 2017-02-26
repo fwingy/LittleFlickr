@@ -6,15 +6,23 @@ import com.google.gson.annotations.SerializedName;
  * Created by fwingy on 2017/2/10.
  */
 
-public class Photo {
+public class OriPhoto {
     @SerializedName("title")
     private String mCaption;
 
     @SerializedName("id")
     private String mId;
 
-    @SerializedName("url_m")
-    private String mUrl_m;
+    @SerializedName("url_o")
+    private String mUrl_o;
+
+    public String getUrl_o() {
+        return mUrl_o;
+    }
+
+    public void setUrl_o(String url_o) {
+        mUrl_o = url_o;
+    }
 
     public String getCaption() {
         return mCaption;
@@ -30,14 +38,6 @@ public class Photo {
 
     public void setId(String id) {
         mId = id;
-    }
-
-    public String getUrl_m() {
-        return mUrl_m;
-    }
-
-    public void setUrl_m(String url) {
-        mUrl_m = url;
     }
 
     @Override

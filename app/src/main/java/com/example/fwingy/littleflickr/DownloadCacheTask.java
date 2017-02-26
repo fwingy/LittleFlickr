@@ -19,9 +19,9 @@ import okhttp3.Response;
  * Created by fwingy on 2017/2/24.
  */
 
-public class DownloadTask extends AsyncTask<String, Integer, Integer> {
+public class DownloadCacheTask extends AsyncTask<String, Integer, Integer> {
 
-    private static final String TAG = "DownloadTask";
+    private static final String TAG = "DownloadCacheTask";
 
     public static final int TYPE_SUCCESS = 0;
     public static final int TYPE_FAILED = 1;
@@ -30,7 +30,7 @@ public class DownloadTask extends AsyncTask<String, Integer, Integer> {
 
     private DownloadListener mDownloadListener;
 
-    public DownloadTask(DownloadListener downloadListener) {
+    public DownloadCacheTask(DownloadListener downloadListener) {
         mDownloadListener = downloadListener;
     }
 
@@ -45,7 +45,8 @@ public class DownloadTask extends AsyncTask<String, Integer, Integer> {
             String fileName = downloadUrl.substring(downloadUrl.lastIndexOf("/"));
             String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
             Log.d(TAG, "下载地址是 " + directory);
-            file = new File(directory + fileName);
+            file = new File(directory + "/LittleFlickr/Cache" + fileName);
+            Log.d(TAG, file.getPath());
             if (file.exists()) {
                 downloadedLength = file.length();
             }

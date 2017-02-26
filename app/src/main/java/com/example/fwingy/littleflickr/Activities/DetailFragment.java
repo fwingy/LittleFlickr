@@ -3,15 +3,22 @@ package com.example.fwingy.littleflickr.Activities;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,22 +30,16 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.fwingy.littleflickr.DataLab.DataLab;
+import com.example.fwingy.littleflickr.DataLab.OriDataLab;
+import com.example.fwingy.littleflickr.GsonData.OriPhoto;
 import com.example.fwingy.littleflickr.GsonData.Photo;
-import com.example.fwingy.littleflickr.GsonData.Size;
-import com.example.fwingy.littleflickr.Network.HTTPUtil;
-import com.example.fwingy.littleflickr.Network.JsonHandleUtil;
-import com.example.fwingy.littleflickr.Network.UrlGenerater;
 import com.example.fwingy.littleflickr.R;
+import com.example.fwingy.littleflickr.Services.DownloadCacheService;
 import com.example.fwingy.littleflickr.Services.DownloadService;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Response;
+import java.io.File;
+import java.util.logging.SocketHandler;
 
 /**
  * Created by fwingy on 2017/2/16.
@@ -51,18 +52,25 @@ public class DetailFragment extends Fragment {
     private static final String PHOTO_ID =
             "com.example.fwingy.littleflickr.photo_id";
 
-    private static final String CURRENT_INDEX =
-            "com.example.fwingy.littleflickr.current_index";
-
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+
+    //public static DetailFragment currentDetailFragment;
+
+    public static String fileName;
+
+    public static String url_m;
 
     private Photo mPhoto;
 
+    private OriPhoto mOriPhoto;
+
     private ImageView mPhotoImageView;
 
-    private String DownloadUrl;
+    private FloatingActionButton mFloatingActionButton;
 
     private DownloadService.DownloadBinder mDownloadBinder;
+
+
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -75,6 +83,8 @@ public class DetailFragment extends Fragment {
 
         }
     };
+
+
 
     public static Fragment newInstance(String id) {
         Bundle bundle = new Bundle();
@@ -89,26 +99,60 @@ public class DetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
-        mPhoto = DataLab.getDataLab(getActivity()).getPhoto(getArguments().getString(PHOTO_ID));
-        //queryLargeDownloadUrlFromServer(UrlGenerater.getUrlStringWithFlickrGetSize(mPhoto.getId()));
-        //queryOriginalDownloadUrlFromServer(UrlGenerater.getUrlStringWithFlickrGetSize(mPhoto.getId()));
-        Log.d(TAG, "图片id是" + mPhoto.getId());
-        Log.d(TAG, "图片url_s是" + mPhoto.getUrl_s());
-        Log.d(TAG, "图片url_l是" + mPhoto.getUrl_l());
-        Log.d(TAG, "图片url_o是" + mPhoto.getUrl_o());
+
         getActivity().startService(DownloadService.newIntent(getActivity()));
         getActivity().bindService(DownloadService.newIntent(getActivity()), mServiceConnection, Context.BIND_AUTO_CREATE);
+
+
+
+
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{ Manifest.permission. WRITE_EXTERNAL_STORAGE }, PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
         }
 
+        setHasOptionsMenu(true);
+        mPhoto = DataLab.getDataLab(getActivity()).getPhoto(getArguments().getString(PHOTO_ID));
+
+        Log.d(TAG, "标题 " + mPhoto.getCaption());
+        mOriPhoto = OriDataLab.getOriDataLab(getActivity()).getOriPhoto(getArguments().getString(PHOTO_ID));
+
+        fileName = mPhoto.getUrl_m().substring(mPhoto.getUrl_m().lastIndexOf("/"));
+        url_m = mPhoto.getUrl_m();
+        //mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
+
+        //currentDetailFragment = (DetailFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.detail_fragment_container);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.photo_detail, container, false);
+
+
+//        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                //mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
+//
+//                String fileName = mPhoto.getUrl_m().substring(mPhoto.getUrl_m().lastIndexOf("/"));
+//                String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+//                Log.d(TAG, "下载地址是 " + directory);
+//                File file = new File(directory + "/LittleFlickr/Cache" + fileName);
+//                Uri uri = Uri.fromFile(file);
+//
+//                Intent shareIntent = new Intent();
+//                shareIntent.setAction(Intent.ACTION_SEND);
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+//                shareIntent.setType("image/jpeg");
+//                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+//                Toast.makeText(getActivity(), "asdfgh", Toast.LENGTH_SHORT);
+//            }
+//        });
+
+        //getActivity().startService(DownloadCacheService.newIntent(getActivity()));
+        //getActivity().bindService(DownloadCacheService.newIntent(getActivity()), mCacheServiceConnection, Context.BIND_AUTO_CREATE);
+
+
 
 //        mDetailToolBar = (Toolbar) view.findViewById(R.id.detail_toolbar);
 //        ((AppCompatActivity)getActivity()).setSupportActionBar(mDetailToolBar);
@@ -124,8 +168,12 @@ public class DetailFragment extends Fragment {
 //        });
         mPhotoImageView = (ImageView) view.findViewById(R.id.photo_detail_view);
         Picasso.with(getActivity())
-                .load(mPhoto.getUrl_l())
+                .load(mPhoto.getUrl_m())
                 .into(mPhotoImageView);
+
+//        Intent shareIntent = new Intent();
+//        shareIntent.setAction(Intent.ACTION_SEND);
+//        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile());
 
         int maxWidth = mPhotoImageView.getMaxWidth();
         int maxHeight = mPhotoImageView.getMaxHeight();
@@ -135,46 +183,18 @@ public class DetailFragment extends Fragment {
         return view;
     }
 
-
-    private void queryOriginalDownloadUrlFromServer(String address) {
-        Log.d(TAG, "getSize地址是" + address);
-        HTTPUtil.sendOkHttpRequest(address, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseText = response.body().string();
-                Log.i(TAG, "加载的Size内容是:" + responseText);
-                DownloadUrl = JsonHandleUtil.handleOriginalUrlResponse(responseText);
-                mPhoto.setUrl_o(DownloadUrl);
-
-                Log.d(TAG, "mPhoto的url_o是" + mPhoto.getUrl_o());
-            }
-        });
-    }
-
-    private void queryLargeDownloadUrlFromServer(String address) {
-        Log.d(TAG, "getSize地址是" + address);
-        HTTPUtil.sendOkHttpRequest(address, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseText = response.body().string();
-                Log.i(TAG, "加载的Size内容是:" + responseText);
-                DownloadUrl = JsonHandleUtil.handleLargeUrlResponse(responseText);
-                mPhoto.setUrl_l(DownloadUrl);
-
-                Log.d(TAG, "mPhoto的url_l是" + mPhoto.getUrl_l());
-            }
-        });
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        String fileName = mPhoto.getUrl_m().substring(mPhoto.getUrl_m().lastIndexOf("/"));
+//        String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+//        Log.d(TAG, "下载地址是 " + directory);
+//        File file = new File(directory + "/LittleFlickr/Cache" + fileName);
+//        if (!file.exists()) {
+//
+//            mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
+//        }
+//    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -184,15 +204,11 @@ public class DetailFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
-            case R.id.menu_action_download:
-                Toast.makeText(getActivity(), R.string.notification_downloading, Toast.LENGTH_SHORT);
-
-                    mDownloadBinder.startDownload(mPhoto.getUrl_o());
-
+            case R.id.action_download:
+                //mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
+                mDownloadBinder.startDownload(mOriPhoto.getUrl_o());
                 break;
-
             default:
                 break;
         }
@@ -215,4 +231,26 @@ public class DetailFragment extends Fragment {
         super.onDestroy();
         getActivity().unbindService(mServiceConnection);
     }
+
+    public static Intent newItentForShare() {
+        String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
+        Log.d(TAG, "下载地址是 " + directory);
+        File file = new File(directory + "/LittleFlickr/Cache" + fileName);
+        Uri uri = Uri.fromFile(file);
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        shareIntent.setType("image/jpeg");
+
+        return shareIntent;
+    }
+
+    public static String getUrl_m() {
+        return url_m;
+    }
+
+//    public static void downloadCache() {
+//        mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
+//    }
 }

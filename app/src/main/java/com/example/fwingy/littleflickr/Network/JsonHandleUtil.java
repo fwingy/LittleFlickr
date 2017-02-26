@@ -1,7 +1,7 @@
 package com.example.fwingy.littleflickr.Network;
 
+import com.example.fwingy.littleflickr.GsonData.OriPhotos;
 import com.example.fwingy.littleflickr.GsonData.Photos;
-import com.example.fwingy.littleflickr.GsonData.Sizes;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -18,6 +18,19 @@ public class JsonHandleUtil {
             JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
             String photoContent = photosJsonObject.toString();
             return new Gson().fromJson(photoContent, Photos.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static OriPhotos handleOriPhotosResponse(String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
+            String photoContent = photosJsonObject.toString();
+            return new Gson().fromJson(photoContent, OriPhotos.class);
 
         } catch (Exception e) {
             e.printStackTrace();

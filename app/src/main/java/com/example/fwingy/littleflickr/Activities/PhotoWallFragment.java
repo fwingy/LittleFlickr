@@ -2,6 +2,7 @@ package com.example.fwingy.littleflickr.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,9 @@ import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
+import com.example.fwingy.littleflickr.DataLab.OriDataLab;
+import com.example.fwingy.littleflickr.GsonData.OriPhoto;
+import com.example.fwingy.littleflickr.GsonData.OriPhotos;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.GsonData.Photos;
 import com.example.fwingy.littleflickr.Network.JsonHandleUtil;
@@ -61,8 +65,6 @@ public class PhotoWallFragment extends Fragment {
 
     private PhotoAdapter mPhotoAdapter;
 
-    private List<Photo> mPhotos;
-
     private Toolbar mToolbar;
 
     private ProgressBar mProgressBar;
@@ -71,9 +73,17 @@ public class PhotoWallFragment extends Fragment {
 
     private boolean isRefreshing;
 
+    private List<Photo> mPhotos;
+
+    private List<OriPhoto> mOriPhotos;
+
     private List<Photo> mNextPagePhotos;
 
+    private List<OriPhoto> mNextPageOriPhotos;
+
     private List<Photo> mAllPhotos = DataLab.getDataLab(getActivity()).getAllPhotos();
+
+    private List<OriPhoto> mAllOriPhotos = OriDataLab.getOriDataLab(getActivity()).getAllOriPhotos();
 
     private void setupAdapter() {
         if (isAdded()) {
@@ -97,7 +107,6 @@ public class PhotoWallFragment extends Fragment {
 
         //autoRefresh();
         Log.i(TAG, UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
-
     }
 
     @Override
@@ -133,6 +142,8 @@ public class PhotoWallFragment extends Fragment {
                         String searchData = SearchPreferences.getSearchData(getActivity());
                         mCurrentPage += 2;
                         continueQueryNextPage(UrlGenerater.getNextPageUrl(getSearchData(), mCurrentPage));
+                        continueQueryNextPageOri(UrlGenerater.getNextOriPageUrl(getSearchData(), mCurrentPage));
+
                         //queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
                         //mPhotoAdapter.notifyDataSetChanged();
                     }
@@ -147,8 +158,10 @@ public class PhotoWallFragment extends Fragment {
                     public void run() {
                         mSwipeToLoadLayout.setRefreshing(false);
                         mAllPhotos.clear();
+                        mAllOriPhotos.clear();
                         isRefreshing = true;
                         queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                        queryOriFromServer(UrlGenerater.getOriUrlStringWithFlickrSearch(getSearchData()));
                         mCurrentPage = 1;
                         isRefreshing = false;
                     }
@@ -158,9 +171,6 @@ public class PhotoWallFragment extends Fragment {
 
         if (savedInstanceState != null) {
             setupAdapter();
-            Log.d(TAG, "图片url_s是" + mAllPhotos.get(0).getUrl_s());
-            Log.d(TAG, "图片url_l是" + mAllPhotos.get(0).getUrl_l());
-            Log.d(TAG, "图片url_o是" + mAllPhotos.get(0).getUrl_o());
         }
 
         autoRefresh();
@@ -210,7 +220,7 @@ public class PhotoWallFragment extends Fragment {
 
                         mPhotos = photos.getPhotoList();
                         mAllPhotos.addAll(mPhotos);
-
+                        Log.d(TAG, "测试photo " + mAllPhotos.get(0).getUrl_m());
                         mPhotoAdapter = new PhotoAdapter(mAllPhotos);
                         setupAdapter();
                         closeProgressDialog();
@@ -218,6 +228,38 @@ public class PhotoWallFragment extends Fragment {
                 });
                 }
             });
+    }
+
+    private void queryOriFromServer(String address) {
+        HTTPUtil.sendOkHttpRequest(address, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "加载失败," +
+                                "请检查网络连接." +
+                                "大陆用户请确保已使用vpn等代理连接.", Toast.LENGTH_LONG).show();
+                        closeProgressDialog();
+                    }
+                });
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseText = response.body().string();
+                Log.i(TAG, "加载的内容是:" + responseText);
+                final OriPhotos oriPhotos = JsonHandleUtil.handleOriPhotosResponse(responseText);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        mOriPhotos = oriPhotos.getOriPhotoList();
+                        mAllOriPhotos.addAll(mOriPhotos);
+                        Log.d(TAG, "测试Oriphoto " + mAllOriPhotos.get(0).getUrl_o());
+                    }
+                });
+            }
+        });
     }
 
     private void continueQueryNextPage(String address) {
@@ -245,6 +287,40 @@ public class PhotoWallFragment extends Fragment {
                         mNextPagePhotos = NextPagePhotos.getPhotoList();
                         mAllPhotos.addAll(mNextPagePhotos);
                         mPhotoAdapter.notifyDataSetChanged();
+                        Log.d(TAG, "测试NextPage " + mNextPagePhotos.get(0));
+                    }
+                });
+            }
+        });
+
+
+    }
+
+    private void continueQueryNextPageOri(String address) {
+        HTTPUtil.sendOkHttpRequest(address, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "加载失败," +
+                                "请检查网络连接." +
+                                "大陆用户请确保已使用vpn等代理连接.", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseText = response.body().string();
+                Log.i(TAG, "加载的内容是:" + responseText);
+                final OriPhotos NextPageOriPhotos = JsonHandleUtil.handleOriPhotosResponse(responseText);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mNextPageOriPhotos = NextPageOriPhotos.getOriPhotoList();
+                        mAllOriPhotos.addAll(mNextPageOriPhotos);
+                        Log.d(TAG, "测试NextPageOri " + mNextPageOriPhotos.get(0));
                     }
                 });
             }
@@ -269,7 +345,7 @@ public class PhotoWallFragment extends Fragment {
             photo = item;
             //mTitleTextView.setText(item.toString());
             Picasso.with(getContext())
-                    .load(photo.getUrl_s())
+                    .load(photo.getUrl_m())
                     .into(mImageView);
         }
 
@@ -338,9 +414,11 @@ public class PhotoWallFragment extends Fragment {
 //                    inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
 //                }
                 mAllPhotos.clear();
+                mAllOriPhotos.clear();
                 queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
+                queryOriFromServer(UrlGenerater.getOriUrlStringWithFlickrSearch(getSearchData()));
+                //Log.d(TAG, "测试搜索OriPhoto" + mAllOriPhotos.get(0).getUrl_o());
                 mCurrentPage = 1;
-
                 return true;
             }
 
@@ -380,4 +458,5 @@ public class PhotoWallFragment extends Fragment {
             mProgressBar.setVisibility(View.GONE);
         }
     }
+
 }

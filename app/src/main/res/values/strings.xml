@@ -15,4 +15,5 @@
     <string name="notification_downloading">downloading</string>
     <string name="notification_download_suceess">Successfully Downloaded</string>
     <string name="notification_download_failed">Download Failed</string>
+    <string name="send_to">Send To</string>
 </resources>

@@ -1,9 +1,13 @@
 package com.example.fwingy.littleflickr.Activities;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -16,7 +20,7 @@ import android.view.View;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.R;
-import com.example.fwingy.littleflickr.Services.DownloadService;
+import com.example.fwingy.littleflickr.Services.DownloadCacheService;
 
 import java.util.List;
 
@@ -32,6 +36,23 @@ public class DetailActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private List<Photo> mPhotoList;
     private Toolbar mDetailToolBar;
+    private FragmentManager fm;
+
+    private FloatingActionButton mFloatingActionButton;
+
+    private DownloadCacheService.DownloadCacheBinder mDownloadCacheBinder;
+
+    private ServiceConnection mCacheServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mDownloadCacheBinder = (DownloadCacheService.DownloadCacheBinder) iBinder;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     public static Intent newIntent(Context packageContext, String id) {
         Intent intent = new Intent(packageContext, DetailActivity.class);
@@ -43,6 +64,20 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.photo_detai_viewpager);
+
+        bindService(DownloadCacheService.newIntent(DetailActivity.this), mCacheServiceConnection, Context.BIND_AUTO_CREATE);
+
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.share_floatingButton);
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String url_m = DetailFragment.getUrl_m();
+                mDownloadCacheBinder.startDownload(url_m);
+                Intent shareIntent = DetailFragment.newItentForShare();
+                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+            }
+        });
 
         mDetailToolBar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(mDetailToolBar);
@@ -62,7 +97,7 @@ public class DetailActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.photo_detail_viewpager);
         mPhotoList = DataLab.getDataLab(this).getAllPhotos();
 
-        FragmentManager fm = getSupportFragmentManager();
+        fm = getSupportFragmentManager();
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fm) {
             @Override
             public Fragment getItem(int position) {
@@ -83,5 +118,7 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
 }

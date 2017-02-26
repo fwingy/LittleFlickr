@@ -9,6 +9,7 @@
 
     <ImageView
         android:adjustViewBounds="true"
+        android:maxHeight="450dp"
         android:id="@+id/photo_detail_view"
         android:layout_centerInParent="true"
         android:layout_width="match_parent"
