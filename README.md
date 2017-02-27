@@ -11,6 +11,9 @@ Flickr的一个简约的Android客户端 Material Design设计
 
 已完成：分享给朋友
 
+![image](https://github.com/fwingy/LittleFlickr/raw/master/screenshots/QQ图片20170227203001.jpg)
+![image](https://github.com/fwingy/LittleFlickr/raw/master/screenshots/QQ图片20170227202955.jpg)
+![image](https://github.com/fwingy/LittleFlickr/raw/master/screenshots/QQ图片20170227202948.jpg)
 
 #第三方库
 GSON
