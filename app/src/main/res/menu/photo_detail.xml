@@ -6,6 +6,6 @@
         android:id="@+id/action_download"
         android:icon="@drawable/ic_file_download_white_24dp"
         android:title="@string/action_download"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 
 </menu>

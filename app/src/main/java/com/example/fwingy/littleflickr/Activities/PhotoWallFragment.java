@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -56,6 +59,8 @@ public class PhotoWallFragment extends Fragment {
     private String TAG = "PhotoWallFragment";
 
     private TextView mHintText;
+
+    private DrawerLayout mDrawerLayout;
 
     private RelativeLayout mGalleryContentLayout;
 
@@ -131,6 +136,12 @@ public class PhotoWallFragment extends Fragment {
         mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         //((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        mDrawerLayout = (DrawerLayout) view.findViewById(R.id.drawerlayout);
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+        }
 
         mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
@@ -435,6 +446,10 @@ public class PhotoWallFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_search:
                 //Toast.makeText(getContext(), "点击了search按钮", Toast.LENGTH_SHORT).show();
+                break;
+
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
 
         }
         return super.onOptionsItemSelected(item);

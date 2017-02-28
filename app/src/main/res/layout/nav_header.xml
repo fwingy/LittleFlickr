@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:background="@color/colorAccent"
+                android:layout_width="match_parent"
+                android:layout_height="180dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/icon_image"
+        android:layout_centerInParent="true"
+        android:src="@drawable/icon_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+
+    <TextView
+        android:id="@+id/useremail"
+        android:text="lzzi386@outlook.com"
+        android:textSize="14sp"
+        android:layout_alignParentBottom="true"
+        android:textColor="@color/textColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/name"
+        android:text="fwingy"
+        android:textColor="@color/textColor"
+        android:textSize="14sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/useremail"/>
+
+</RelativeLayout>
