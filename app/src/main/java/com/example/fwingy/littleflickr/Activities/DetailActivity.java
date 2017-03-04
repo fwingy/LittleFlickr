@@ -16,12 +16,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.R;
 import com.example.fwingy.littleflickr.Services.DownloadCacheService;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -36,7 +38,9 @@ public class DetailActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private List<Photo> mPhotoList;
     private Toolbar mDetailToolBar;
+    private DetailFragment mDetailFragment;
     private FragmentManager fm;
+    private MyPagerAdapter myPagerAdapter;
 
     private FloatingActionButton mFloatingActionButton;
 
@@ -60,6 +64,43 @@ public class DetailActivity extends AppCompatActivity {
         return intent;
     }
 
+    private class MyPagerAdapter extends FragmentStatePagerAdapter {
+
+        HashMap registeredFragments = new HashMap<Integer, Fragment>();
+
+        public MyPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+            registeredFragments.put(position, fragment);
+            return fragment;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.remove(position);
+            super.destroyItem(container, position, object);
+        }
+
+        public Fragment getRegisteredFragments(int position) {
+            return (Fragment) registeredFragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mPhotoList.size();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Photo photo = mPhotoList.get(position);
+            return DetailFragment.newInstance(photo.getId());
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,10 +112,10 @@ public class DetailActivity extends AppCompatActivity {
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                String url_m = DetailFragment.getUrl_m();
+                mDetailFragment = (DetailFragment) myPagerAdapter.getRegisteredFragments(mViewPager.getCurrentItem());
+                String url_m = mDetailFragment.getUrl_m();
                 mDownloadCacheBinder.startDownload(url_m);
-                Intent shareIntent = DetailFragment.newItentForShare();
+                Intent shareIntent = mDetailFragment.newItentForShare();
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
             }
         });
@@ -98,18 +139,8 @@ public class DetailActivity extends AppCompatActivity {
         mPhotoList = DataLab.getDataLab(this).getAllPhotos();
 
         fm = getSupportFragmentManager();
-        mViewPager.setAdapter(new FragmentStatePagerAdapter(fm) {
-            @Override
-            public Fragment getItem(int position) {
-                Photo photo = mPhotoList.get(position);
-                return DetailFragment.newInstance(photo.getId());
-            }
-
-            @Override
-            public int getCount() {
-                return mPhotoList.size();
-            }
-        });
+        myPagerAdapter = new MyPagerAdapter(fm);
+        mViewPager.setAdapter(myPagerAdapter);
 
         for (int i = 0; i < mPhotoList.size(); i++) {
             if (mPhotoList.get(i).getId().equals(photo_id)) {
@@ -117,8 +148,13 @@ public class DetailActivity extends AppCompatActivity {
                 break;
             }
         }
+
+
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-
+    }
 }

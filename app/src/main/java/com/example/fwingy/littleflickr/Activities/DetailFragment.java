@@ -56,9 +56,9 @@ public class DetailFragment extends Fragment {
 
     //public static DetailFragment currentDetailFragment;
 
-    public static String fileName;
+    private String fileName;
 
-    public static String url_m;
+    private String url_m;
 
     private Photo mPhoto;
 
@@ -232,7 +232,7 @@ public class DetailFragment extends Fragment {
         getActivity().unbindService(mServiceConnection);
     }
 
-    public static Intent newItentForShare() {
+    public Intent newItentForShare() {
         String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
         Log.d(TAG, "下载地址是 " + directory);
         File file = new File(directory + "/LittleFlickr/Cache" + fileName);
@@ -246,7 +246,7 @@ public class DetailFragment extends Fragment {
         return shareIntent;
     }
 
-    public static String getUrl_m() {
+    public String getUrl_m() {
         return url_m;
     }
 
