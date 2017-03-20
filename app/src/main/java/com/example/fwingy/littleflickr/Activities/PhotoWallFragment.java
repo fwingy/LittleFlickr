@@ -143,6 +143,8 @@ public class PhotoWallFragment extends Fragment {
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
         }
 
+        mSwipeToLoadLayout.setRefreshEnabled(false);
+        mSwipeToLoadLayout.setLoadMoreEnabled(false);
         mSwipeToLoadLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore() {
@@ -228,13 +230,18 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        mPhotos = photos.getPhotoList();
-                        mAllPhotos.addAll(mPhotos);
-                        Log.d(TAG, "测试photo " + mAllPhotos.get(0).getUrl_m());
-                        mPhotoAdapter = new PhotoAdapter(mAllPhotos);
-                        setupAdapter();
-                        closeProgressDialog();
+                        try {
+                            mPhotos = photos.getPhotoList();
+                            mAllPhotos.addAll(mPhotos);
+                            Log.d(TAG, "测试photo " + mAllPhotos.get(0).getUrl_m());
+                            mPhotoAdapter = new PhotoAdapter(mAllPhotos);
+                            setupAdapter();
+                            closeProgressDialog();
+                        }catch (IndexOutOfBoundsException e) {
+                            closeProgressDialog();
+                            Toast.makeText(getActivity(), "没有结果", Toast.LENGTH_SHORT)
+                            .show();
+                        }
                     }
                 });
                 }
@@ -263,10 +270,14 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        mOriPhotos = oriPhotos.getOriPhotoList();
-                        mAllOriPhotos.addAll(mOriPhotos);
-                        Log.d(TAG, "测试Oriphoto " + mAllOriPhotos.get(0).getUrl_o());
+                        try {
+                            mOriPhotos = oriPhotos.getOriPhotoList();
+                            mAllOriPhotos.addAll(mOriPhotos);
+                            Log.d(TAG, "测试Oriphoto " + mAllOriPhotos.get(0).getUrl_o());
+                        }
+                        catch (IndexOutOfBoundsException e) {
+                            closeProgressDialog();
+                        }
                     }
                 });
             }
@@ -424,6 +435,12 @@ public class PhotoWallFragment extends Fragment {
 //                    InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 //                    inputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
 //                }
+                if (!mSwipeToLoadLayout.isLoadMoreEnabled()) {
+                    mSwipeToLoadLayout.setLoadMoreEnabled(true);
+                }
+                if (!mSwipeToLoadLayout.isRefreshEnabled()) {
+                    mSwipeToLoadLayout.setRefreshEnabled(true);
+                }
                 mAllPhotos.clear();
                 mAllOriPhotos.clear();
                 queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
