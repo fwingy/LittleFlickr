@@ -190,7 +190,7 @@ public class PhotoWallFragment extends Fragment {
         mGalleryContentLayout = (RelativeLayout) inflater.inflate(R.layout.gallery_content, null);
         mGalleryContentLayout.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
-        mHintText.setText("按“搜索”键搜索Flickr");
+        mHintText.setText("按右上角“搜索”键搜索Flickr");
         return view;
     }
 
@@ -239,8 +239,8 @@ public class PhotoWallFragment extends Fragment {
                             closeProgressDialog();
                         }catch (IndexOutOfBoundsException e) {
                             closeProgressDialog();
-                            Toast.makeText(getActivity(), "没有结果", Toast.LENGTH_SHORT)
-                            .show();
+                            mHintText.setText("糟糕，找不到任何结果！");
+                            mHintText.setVisibility(View.VISIBLE);
                         }
                     }
                 });
@@ -368,6 +368,7 @@ public class PhotoWallFragment extends Fragment {
             //mTitleTextView.setText(item.toString());
             Picasso.with(getContext())
                     .load(photo.getUrl_m())
+                    .placeholder(R.drawable.flickr_icon_meitu_1)
                     .into(mImageView);
         }
 
@@ -441,6 +442,7 @@ public class PhotoWallFragment extends Fragment {
                 if (!mSwipeToLoadLayout.isRefreshEnabled()) {
                     mSwipeToLoadLayout.setRefreshEnabled(true);
                 }
+                mToolbar.setSubtitle("搜索结果：" + query);
                 mAllPhotos.clear();
                 mAllOriPhotos.clear();
                 queryFromServer(UrlGenerater.getUrlStringWithFlickrSearch(getSearchData()));
