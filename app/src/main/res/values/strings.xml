@@ -16,4 +16,6 @@
     <string name="notification_download_suceess">Successfully Downloaded</string>
     <string name="notification_download_failed">Download Failed</string>
     <string name="send_to">Send To</string>
+    <string name="exit">Exit</string>
+    <string name="about">About</string>
 </resources>

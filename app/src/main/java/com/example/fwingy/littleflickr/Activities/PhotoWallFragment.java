@@ -1,9 +1,13 @@
 package com.example.fwingy.littleflickr.Activities;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -20,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -29,6 +34,7 @@ import android.widget.Toast;
 import com.aspsine.swipetoloadlayout.OnLoadMoreListener;
 import com.aspsine.swipetoloadlayout.OnRefreshListener;
 import com.aspsine.swipetoloadlayout.SwipeToLoadLayout;
+import com.example.fwingy.littleflickr.Base.ActivitiesCollecter;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.DataLab.OriDataLab;
 import com.example.fwingy.littleflickr.GsonData.OriPhoto;
@@ -128,6 +134,20 @@ public class PhotoWallFragment extends Fragment {
         //return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
+        NavigationView navigationView = (NavigationView) view.findViewById(R.id.navigation_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.exit:
+                        ActivitiesCollecter.finishAllActivities();
+                        break;
+                    case R.id.about:
+                        break;
+                }
+                return true;
+            }
+        });
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
         mHintText = (TextView) view.findViewById(R.id.hint_text);
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
@@ -191,7 +211,9 @@ public class PhotoWallFragment extends Fragment {
         mGalleryContentLayout.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
         mHintText.setText("按右上角“搜索”键搜索Flickr");
+
         return view;
+
     }
 
     private void autoRefresh() {
@@ -306,10 +328,15 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mNextPagePhotos = NextPagePhotos.getPhotoList();
-                        mAllPhotos.addAll(mNextPagePhotos);
-                        mPhotoAdapter.notifyDataSetChanged();
-                        Log.d(TAG, "测试NextPage " + mNextPagePhotos.get(0));
+                        try {
+                            mNextPagePhotos = NextPagePhotos.getPhotoList();
+                            mAllPhotos.addAll(mNextPagePhotos);
+                            mPhotoAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "测试NextPage " + mNextPagePhotos.get(0));
+                        }catch (IndexOutOfBoundsException e) {
+                            closeProgressDialog();
+                            Toast.makeText(getActivity(), "没有更多", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
@@ -340,9 +367,13 @@ public class PhotoWallFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mNextPageOriPhotos = NextPageOriPhotos.getOriPhotoList();
-                        mAllOriPhotos.addAll(mNextPageOriPhotos);
-                        Log.d(TAG, "测试NextPageOri " + mNextPageOriPhotos.get(0));
+                        try {
+                            mNextPageOriPhotos = NextPageOriPhotos.getOriPhotoList();
+                            mAllOriPhotos.addAll(mNextPageOriPhotos);
+                            Log.d(TAG, "测试NextPageOri " + mNextPageOriPhotos.get(0));
+                        }catch (IndexOutOfBoundsException e) {
+                            closeProgressDialog();
+                        }
                     }
                 });
             }
@@ -492,5 +523,6 @@ public class PhotoWallFragment extends Fragment {
             mProgressBar.setVisibility(View.GONE);
         }
     }
+
 
 }

@@ -41,6 +41,8 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.logging.SocketHandler;
 
+import static com.example.fwingy.littleflickr.Activities.DetailActivity.isToolBarShowed;
+
 /**
  * Created by fwingy on 2017/2/16.
  */
@@ -56,9 +58,11 @@ public class DetailFragment extends Fragment {
 
     //public static DetailFragment currentDetailFragment;
 
-    private String fileName;
+    private String mPhotoFileName;
 
-    private String url_m;
+    private String mPhotoUrl_m;
+
+    private String mPhotoCaption;
 
     private Photo mPhoto;
 
@@ -66,11 +70,7 @@ public class DetailFragment extends Fragment {
 
     private ImageView mPhotoImageView;
 
-    private FloatingActionButton mFloatingActionButton;
-
     private DownloadService.DownloadBinder mDownloadBinder;
-
-
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -83,8 +83,6 @@ public class DetailFragment extends Fragment {
 
         }
     };
-
-
 
     public static Fragment newInstance(String id) {
         Bundle bundle = new Bundle();
@@ -116,8 +114,9 @@ public class DetailFragment extends Fragment {
         Log.d(TAG, "标题 " + mPhoto.getCaption());
         mOriPhoto = OriDataLab.getOriDataLab(getActivity()).getOriPhoto(getArguments().getString(PHOTO_ID));
 
-        fileName = mPhoto.getUrl_m().substring(mPhoto.getUrl_m().lastIndexOf("/"));
-        url_m = mPhoto.getUrl_m();
+        mPhotoFileName = mPhoto.getUrl_m().substring(mPhoto.getUrl_m().lastIndexOf("/"));
+        mPhotoUrl_m = mPhoto.getUrl_m();
+        mPhotoCaption = mPhoto.getCaption();
         //mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
 
         //currentDetailFragment = (DetailFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.detail_fragment_container);
@@ -127,6 +126,7 @@ public class DetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.photo_detail, container, false);
+
 
 
 //        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -167,6 +167,18 @@ public class DetailFragment extends Fragment {
 //            }
 //        });
         mPhotoImageView = (ImageView) view.findViewById(R.id.photo_detail_view);
+        mPhotoImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isToolBarShowed) {  //import static com.example.fwingy.littleflickr.Activities.DetailActivity.isToolBarShowed;
+                    ((DetailActivity)getActivity()).startHideAnimation();
+                    isToolBarShowed = false;
+                } else {
+                    ((DetailActivity)getActivity()).startShowAnimation();
+                    isToolBarShowed = true;
+                }
+            }
+        });
         Picasso.with(getActivity())
                 .load(mPhoto.getUrl_m())
                 .into(mPhotoImageView);
@@ -235,7 +247,7 @@ public class DetailFragment extends Fragment {
     public Intent newItentForShare() {
         String directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
         Log.d(TAG, "下载地址是 " + directory);
-        File file = new File(directory + "/LittleFlickr/Cache" + fileName);
+        File file = new File(directory + "/LittleFlickr/Cache" + mPhotoFileName);
         Uri uri = Uri.fromFile(file);
 
         Intent shareIntent = new Intent();
@@ -247,10 +259,14 @@ public class DetailFragment extends Fragment {
     }
 
     public String getUrl_m() {
-        return url_m;
+        return mPhotoUrl_m;
     }
 
-//    public static void downloadCache() {
+    public String getPhotoCaption() {
+        return mPhotoCaption;
+    }
+
+    //    public static void downloadCache() {
 //        mDownloadCacheBinder.startDownload(mPhoto.getUrl_m());
 //    }
 }

@@ -16,4 +16,6 @@
     <string name="notification_download_suceess">下载成功</string>
     <string name="notification_download_failed">下载失败</string>
     <string name="send_to">发送到</string>
+    <string name="exit">退出</string>
+    <string name="about">关于</string>
 </resources>

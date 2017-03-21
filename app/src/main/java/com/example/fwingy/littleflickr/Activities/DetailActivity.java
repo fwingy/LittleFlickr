@@ -1,5 +1,7 @@
 package com.example.fwingy.littleflickr.Activities;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,13 +13,18 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 
+import com.example.fwingy.littleflickr.Base.ActivitiesCollecter;
 import com.example.fwingy.littleflickr.DataLab.DataLab;
 import com.example.fwingy.littleflickr.GsonData.Photo;
 import com.example.fwingy.littleflickr.R;
@@ -41,6 +48,8 @@ public class DetailActivity extends AppCompatActivity {
     private DetailFragment mDetailFragment;
     private FragmentManager fm;
     private MyPagerAdapter myPagerAdapter;
+
+    public static Boolean isToolBarShowed;
 
     private FloatingActionButton mFloatingActionButton;
 
@@ -105,6 +114,9 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.photo_detai_viewpager);
+        ActivitiesCollecter.addActivities(this);
+
+        isToolBarShowed = true;
 
         bindService(DownloadCacheService.newIntent(DetailActivity.this), mCacheServiceConnection, Context.BIND_AUTO_CREATE);
 
@@ -112,7 +124,7 @@ public class DetailActivity extends AppCompatActivity {
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDetailFragment = (DetailFragment) myPagerAdapter.getRegisteredFragments(mViewPager.getCurrentItem());
+
                 String url_m = mDetailFragment.getUrl_m();
                 mDownloadCacheBinder.startDownload(url_m);
                 Intent shareIntent = mDetailFragment.newItentForShare();
@@ -120,20 +132,10 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        mDetailToolBar = (Toolbar) findViewById(R.id.detail_toolbar);
-        setSupportActionBar(mDetailToolBar);
-        ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
 
-
-        mDetailToolBar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
 
         String photo_id = getIntent().getStringExtra(INTENT_EXTRA_PHOTO_ID);
+
 
         mViewPager = (ViewPager) findViewById(R.id.photo_detail_viewpager);
         mPhotoList = DataLab.getDataLab(this).getAllPhotos();
@@ -149,12 +151,74 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
 
+        mDetailToolBar = (Toolbar) findViewById(R.id.detail_toolbar);
+        setSupportActionBar(mDetailToolBar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        mDetailToolBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        mDetailFragment = (DetailFragment) myPagerAdapter.getRegisteredFragments(mViewPager.getCurrentItem());
 
+        mDetailToolBar.setSubtitle(mDetailFragment.getUrl_m());
+        mDetailToolBar.setTitle(mDetailFragment.getPhotoCaption());
+    }
+
+    void startHideAnimation() {
+        float toolBarYStart = mDetailToolBar.getTop();
+        float toolBarYEnd = mDetailToolBar.getTop() - mDetailToolBar.getBottom();
+
+        float floatingButtonYStart = mFloatingActionButton.getTop();
+        float floatingButtonYEnd = mViewPager.getBottom();
+
+        ObjectAnimator toolBarAnimator = ObjectAnimator
+                .ofFloat(mDetailToolBar, "y", toolBarYStart, toolBarYEnd)
+                .setDuration(500);
+        toolBarAnimator.setInterpolator(new AccelerateInterpolator());
+
+        ObjectAnimator floatingButtonAnimator = ObjectAnimator
+                .ofFloat(mFloatingActionButton, "y", floatingButtonYStart, floatingButtonYEnd)
+                .setDuration(500);
+        floatingButtonAnimator.setInterpolator(new AccelerateInterpolator());
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .play(toolBarAnimator)
+                .before(floatingButtonAnimator);
+        animatorSet.start();
+    }
+
+    void startShowAnimation() {
+        float toolBarYStart = mDetailToolBar.getTop();
+        float toolBarYEnd = mDetailToolBar.getTop() - mDetailToolBar.getBottom();
+
+        float floatingButtonYStart = mFloatingActionButton.getTop();
+        float floatingButtonYEnd = mViewPager.getBottom();
+
+        ObjectAnimator toolBarAnimator = ObjectAnimator
+                .ofFloat(mDetailToolBar, "y", toolBarYEnd, toolBarYStart)
+                .setDuration(500);
+        toolBarAnimator.setInterpolator(new AccelerateInterpolator());
+
+        ObjectAnimator floatingButtonAnimator = ObjectAnimator
+                .ofFloat(mFloatingActionButton, "y", floatingButtonYEnd, floatingButtonYStart)
+                .setDuration(500);
+        floatingButtonAnimator.setInterpolator(new AccelerateInterpolator());
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet
+                .play(toolBarAnimator)
+                .before(floatingButtonAnimator);
+        animatorSet.start();
     }
 }
