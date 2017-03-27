@@ -1,10 +1,9 @@
 package com.example.fwingy.littleflickr.Activities;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -24,7 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -44,8 +42,11 @@ import com.example.fwingy.littleflickr.GsonData.Photos;
 import com.example.fwingy.littleflickr.Network.JsonHandleUtil;
 import com.example.fwingy.littleflickr.Network.HTTPUtil;
 import com.example.fwingy.littleflickr.Network.UrlGenerater;
+import com.example.fwingy.littleflickr.OAuth.OAuthTask;
 import com.example.fwingy.littleflickr.R;
 import com.example.fwingy.littleflickr.SearchPreferences;
+import com.googlecode.flickrjandroid.oauth.OAuth;
+import com.googlecode.flickrjandroid.people.User;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -64,7 +65,15 @@ public class PhotoWallFragment extends Fragment {
 
     private String TAG = "PhotoWallFragment";
 
+    private TextView mUserName;
+    private TextView mUserRealName;
+    private ImageView mUserIcon;
+
     private TextView mHintText;
+
+    private ProgressDialog mOAuthingDialog;
+
+    private ProgressDialog mLoadingUserDialog;
 
     private DrawerLayout mDrawerLayout;
 
@@ -128,26 +137,25 @@ public class PhotoWallFragment extends Fragment {
         //closeProgressDialog();
     }
 
+    public void setUser(User user) {
+        mUserName.setText(user.getUsername());
+        mUserRealName.setText(user.getRealName());
+    }
+
+    public void loadUserIcon(OAuth oAuth) {
+        Picasso.with(getActivity())
+                .load(oAuth.getUser().getBuddyIconUrl())
+                .into(mUserIcon);
+    }
+
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
         //return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
-        NavigationView navigationView = (NavigationView) view.findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.exit:
-                        ActivitiesCollecter.finishAllActivities();
-                        break;
-                    case R.id.about:
-                        break;
-                }
-                return true;
-            }
-        });
+
+
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressbar);
         mHintText = (TextView) view.findViewById(R.id.hint_text);
         mPhotoWallRecyclerView = (RecyclerView) view.findViewById(R.id.swipe_target);
@@ -162,6 +170,27 @@ public class PhotoWallFragment extends Fragment {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
         }
+
+        NavigationView navigationView = (NavigationView) view.findViewById(R.id.navigation_view);
+        View header = navigationView.getHeaderView(0);
+        mUserName = (TextView) header.findViewById(R.id.username);
+        mUserRealName = (TextView) header.findViewById(R.id.userrealname);
+        mUserIcon = (ImageView) header.findViewById(R.id.icon_image);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.login:
+                        ((MainActivity)getActivity()).startOAuth();
+                        break;
+                    case R.id.about:
+                        break;
+                    case R.id.exit:
+                        ActivitiesCollecter.finishAllActivities();
+                }
+                return true;
+            }
+        });
 
         mSwipeToLoadLayout.setRefreshEnabled(false);
         mSwipeToLoadLayout.setLoadMoreEnabled(false);
@@ -524,5 +553,27 @@ public class PhotoWallFragment extends Fragment {
         }
     }
 
+    public void showLoadingUserDialog() {
+        mLoadingUserDialog = new ProgressDialog(getActivity());
+        mLoadingUserDialog.setMessage(getString(R.string.loading_user_info));
+        mLoadingUserDialog.show();
+    }
 
+    public void closeLoadingUserDialog() {
+        if (mLoadingUserDialog != null) {
+            mLoadingUserDialog.dismiss();
+        }
+    }
+
+    public void showOAuthingDialog() {
+        mOAuthingDialog = new ProgressDialog(getActivity());
+        mOAuthingDialog.setMessage(getString(R.string.please_oauth));
+        mOAuthingDialog.show();
+    }
+
+    public void closeOAuthingDialog() {
+        if (mOAuthingDialog != null) {
+            mOAuthingDialog.dismiss();
+        }
+    }
 }

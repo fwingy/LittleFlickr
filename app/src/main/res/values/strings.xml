@@ -18,4 +18,7 @@
     <string name="send_to">Send To</string>
     <string name="exit">Exit</string>
     <string name="about">About</string>
+    <string name="login">Login</string>
+    <string name="loading_user_info">Loading user information...</string>
+    <string name="please_oauth">Please Authorize On The Opened Webpage</string>
 </resources>

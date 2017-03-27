@@ -11,11 +11,9 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 import com.example.fwingy.littleflickr.Activities.MainActivity;
 import com.example.fwingy.littleflickr.DownloadCacheTask;
-import com.example.fwingy.littleflickr.DownloadTask;
 import com.example.fwingy.littleflickr.Interfaces.DownloadListener;
 import com.example.fwingy.littleflickr.R;
 

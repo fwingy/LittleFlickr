@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="flickrj-android-2.1.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.googlecode.flickrj-android/flickrj-android/2.1.0/8ff4a341260f9f438456d990396589d51a61e36/flickrj-android-2.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.googlecode.flickrj-android/flickrj-android/2.1.0/d54831d09d8146b0c81d475028597d053dbe5277/flickrj-android-2.1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

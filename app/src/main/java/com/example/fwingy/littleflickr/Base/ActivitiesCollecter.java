@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 public class ActivitiesCollecter {
-    public static List<Activity> activities = new ArrayList<Activity>();
+    public static List<Activity> activities = new ArrayList<>();
 
     /**
      * 在avtivity创建时（onCreate）调用
