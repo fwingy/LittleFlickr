@@ -109,7 +109,7 @@ public class MainActivity extends BaseActivity {
     }
 
     public void saveOAuthToken(String userName, String userId, String token, String tokenSecret) {
-        logger.debug("Saving userName=%s, userId=%s, oauth token={}, and token secret={}", new String[]{userName, userId, token, tokenSecret}); //$NON-NLS-1$
+        //logger.debug("Saving userName=%s, userId=%s, oauth token={}, and token secret={}", new String[]{userName, userId, token, tokenSecret}); //$NON-NLS-1$
         SharedPreferences sp = getSharedPreferences(PREFS_NAME,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
@@ -117,7 +117,7 @@ public class MainActivity extends BaseActivity {
         editor.putString(KEY_TOKEN_SECRET, tokenSecret);
         editor.putString(KEY_USER_NAME, userName);
         editor.putString(KEY_USER_ID, userId);
-        editor.commit();
+        editor.apply();
     }
 
     public void onOAuthDone(OAuth result) {

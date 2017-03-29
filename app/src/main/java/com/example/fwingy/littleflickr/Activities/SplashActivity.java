@@ -17,7 +17,7 @@ import com.example.fwingy.littleflickr.R;
 
 public class SplashActivity extends AppCompatActivity {
 
-    public static final long SPLASH_TIME = 2000;
+    public static final long SPLASH_TIME = 1500;
     public static final int JUMP_TO_NEXT_ACTIVITY = 0;
 
     private Handler mHandler = new Handler() {
